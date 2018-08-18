@@ -77,7 +77,9 @@ def frame_visual(geometry=None, origin=None):
     return urdf.Visual(
         geometry=geometry,
         origin=origin,
-        material=orange()
+        material=urdf.Material(
+            name="Gazebo/Orange"
+        )
     )
 
 def default_inertial():
@@ -122,7 +124,9 @@ def default_visual(geometry=None, origin=None):
     return urdf.Visual(
         geometry=geometry,
         origin=origin,
-        material=black()
+        material=urdf.Material(
+            "Gazebo/Black"
+        )
     )
 
 def default_dynamics(damping=None, friction=None):
@@ -243,6 +247,19 @@ def generate_robot(namespace):
             d.text = namespace + "ftSensors/" + joint.name
             robot.add_aggregate("gazebo", a)
     
+    # Gazebo Color Plugin for all links
+    for link_i, link in enumerate(get_all_links(robot)):
+        a = etree.Element("gazebo", {"reference": link.name})
+        b = etree.SubElement(a, "material")
+        b.text = "Gazebo/Black"
+        robot.add_aggregate("gazebo", a)
+
+    # Gazebo Color Plugin for Frame
+    a = etree.Element("gazebo", {"reference": "l_frame"})
+    b = etree.SubElement(a, "material")
+    b.text = "Gazebo/Orange"
+    robot.add_aggregate("gazebo", a)
+
     # Gazebo plugin
     a = etree.Element("gazebo")
     b = etree.SubElement(a, "plugin", {
@@ -276,6 +293,10 @@ def get_all_continuous_joints_names(robot):
         typ: [joint.name for joint in robot.joints if joint.type == "continuous"]
     }
     return joints
+
+def get_all_links(robot):
+    """ Get all link names of the robot """
+    return [link for link in robot.links if link.name != "l_frame"]
 
 def main():
     """ Main """
