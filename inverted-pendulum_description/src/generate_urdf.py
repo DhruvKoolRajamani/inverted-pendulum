@@ -11,13 +11,13 @@ import yaml
 import numpy as np
 
 name = "LIP"
-n_links = 4
+n_links = 1
 
 n_len = 2.0/n_links
 n_offset = 0.5/n_links
 
 l_f_rad = 0.05
-l_f_len = 2
+l_f_len = 2.2
 
 l_link_len = n_len
 l_link_rad = 0.05
@@ -181,7 +181,7 @@ def generate_robot(namespace):
             0.1 if i == 0
             else 2*l_link_rad)
         l_z = (
-            (1.95) if i == 0
+            (l_f_len - 0.05) if i == 0
             else (l_link_len - 0.05)
         )
         l_pos = urdf.Pose(

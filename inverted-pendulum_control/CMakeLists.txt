@@ -105,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES inverted-pendulum_control
-#  CATKIN_DEPENDS gazebo_ros roscpp rospyDhruv
+#  CATKIN_DEPENDS gazebo_ros roscpp rospy
 #  DEPENDS system_lib
 )
 
