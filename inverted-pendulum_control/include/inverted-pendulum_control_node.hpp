@@ -40,14 +40,16 @@ using namespace ros;
 bool                                jointEffortPublish;
 bool                                ftSubscriberSet = true;
 
-int                                 n;
+static int                          n;
+
 int                                 callbackQueueSize = 10;
+int                                 islands, robots;
 
 double                              _tm;
 
-string                              prefix = "/island_1/robot_1";
+string                              prefix = "/island_1/robot_1/";
 string                              control_prefix = 
-                                        prefix + "/control/config";
+                                        prefix + "control/config/";
 
 geometry_msgs::WrenchStamped        wJoint1;
 
@@ -59,6 +61,10 @@ ros::Subscriber                     ftSubscriber;
 vector< string >                    jointEffortList;
 vector< string >                    ftFeedbackList;
 vector< string >                    continuousJointsList;
+vector< string >                    vPrefix;
+
+vector< float >                     jsPos;
+vector< float >                     jsVel;
 
 vector< ros::Publisher >            vec_pubs_efforts;
 vector< ros::Subscriber >           vec_ftSensor;
@@ -66,6 +72,36 @@ vector< ros::Subscriber >           vec_ftSensor;
 /**
  * Initializing global functions
  */
+
+void setParameters( ros::NodeHandlePtr node_handle )
+{
+    node_handle->getParam(
+        "islands",
+        islands
+    );
+    cout << islands;
+    for ( int i= 1; i< islands + 1; i++ )
+    {
+        node_handle->getParam(
+        "islands_" + to_string(i) + "/robots",
+        robots
+        );
+
+        for ( int j= 1; j< robots + 1; j++ )
+        {
+            node_handle->getParam(
+                "namespace_" + to_string(i) + "_" + to_string(j),
+                prefix
+            );
+            vPrefix.push_back( prefix );
+        }
+    }
+
+    node_handle->getParam(
+        prefix + "n_joints",
+        n
+    );
+}
 
 bool init( ros::NodeHandlePtr node_handle )
 {
@@ -76,13 +112,13 @@ bool init( ros::NodeHandlePtr node_handle )
     for ( int i= 0; i< n; i++ )
     {
         // Initializing vector of strings for joint effort controllers in the spine
-        node_handle->getParam(prefix + "/joint/" + to_string(i), jointName);
+        node_handle->getParam(prefix + "joint/" + to_string(i), jointName);
         continuousJointsList.push_back(jointName);
 
-        cout << i << " : " << continuousJointsList[i] << endl;
+        // cout << i << " : " << continuousJointsList[i] << endl;
 
         string joint_control_topic_name = 
-            control_prefix + "/joint_effort_controller_" + jointName + "/command";
+            control_prefix + "joint_effort_controller_" + jointName + "/command";
         jointEffortList.push_back(joint_control_topic_name);
 
         pubs_efforts = node_handle->advertise< std_msgs::Float64 > ( 
@@ -94,9 +130,12 @@ bool init( ros::NodeHandlePtr node_handle )
         // JointState feedback
         if ( ftSubscriberSet )
         {
-            string ftSensorTopicName = prefix + "/ft_sensor/" + jointName;
+            string ftSensorTopicName = prefix + "ft_sensor/" + jointName;
             ftFeedbackList.push_back( ftSensorTopicName );
         }
+
+        jsPos.push_back( 0.0 );
+        jsVel.push_back( 0.0 );
     }
 
     if ( /*condition*/ true )
@@ -109,31 +148,43 @@ void jointEffortControllers( double torques[] )
 {
     std_msgs::Float64 TmpData;
 
-    int count = 0;
-
     for ( int i= 0; i< n; i++ )
     {
         TmpData.data = torques[i];
         vec_pubs_efforts[i].publish(TmpData);
-        count++;
     }
 }
 
 void jointStateCallback( const sensor_msgs::JointState::ConstPtr & msg )
 {
-    // jointState = *msg;
-    ROS_INFO( "Position: %f", msg->position[0] );
-    cout << msg->position[0] << endl;
+    jointState = *msg;
 }
 
 void jointStateFeedback( ros::NodeHandlePtr node_handle )
 {
-    string topic = prefix + "/joint_states";
+    string topic = prefix + "joint_states";
     jointStateSubscriber = node_handle->subscribe( 
                             topic,
-                            callbackQueueSize, 
+                            n, 
                             jointStateCallback
                             );
+}
+
+void setStateFeedback()
+{
+    for ( int i= 0; i< n; i++ )
+    {
+        for ( int j = 0; j< jointState.name.size(); j++ )
+        {
+            if (( continuousJointsList[i].compare( jointState.name[j] ) ) == 0 )
+            {
+                jsPos[i] = (float)jointState.position[j];
+                jsVel[i] = (float)jointState.velocity[j];
+
+                cout << i << " : " << jsPos[i] << endl;
+            }
+        }
+    }
 }
 
 void ftCallback( const geometry_msgs::WrenchStamped& msg )
