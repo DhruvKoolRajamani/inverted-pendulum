@@ -11,7 +11,7 @@ import yaml
 import numpy as np
 
 name = "LIP"
-n_links = 1
+n_links = 2
 
 n_len = 2.0/n_links
 n_offset = 0.5/n_links
