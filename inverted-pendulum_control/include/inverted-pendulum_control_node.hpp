@@ -39,6 +39,8 @@ using namespace ros;
 
 bool                                jointEffortPublish;
 bool                                ftSubscriberSet = true;
+bool                                bBegin = false;
+bool                                converged = false;
 
 static int                          n;
 
@@ -46,6 +48,8 @@ int                                 callbackQueueSize = 10;
 int                                 islands, robots;
 
 double                              _tm;
+
+double*                             Qfinal;
 
 string                              prefix = "/island_1/robot_1/";
 string                              control_prefix = 
@@ -103,6 +107,8 @@ void setParameters( ros::NodeHandlePtr node_handle )
         prefix + "n_joints",
         n
     );
+
+    Qfinal = new double( n );
 }
 
 bool init( ros::NodeHandlePtr node_handle )
@@ -234,21 +240,21 @@ void converge()
     double pos_des;
     double vel_des;
     double Kp[n], Kd[n];
-    double ALPHA = 0.3;
-
-    double Qfinal[n];
+    double ALPHA = 0.1;
 
     for( int i= 0; i< n; i++ )
     {
-        Qfinal[i] = 0.0;
-        Kp[i] = 100;
-        Kd[i] = 10;
+        if ( bBegin )
+            Qfinal[i] = 2*M_PI;
+
+        Kp[i] = 100*( 1 - exp( -ALPHA * _tm ) );
+        Kd[i] = 10*( 1 - exp( -ALPHA * _tm ) );
     }
 
     for ( int i = 0; i< n; i++ )
     {
-        y[i] = Qfinal[i]*( 1 + exp( -ALPHA * _tm ) ) - jsPos[i];
-        dy[i] = - ALPHA*Qfinal[i]*exp( -ALPHA * _tm ) - jsVel[i];
+        y[i] = Qfinal[i] - jsPos[i];
+        dy[i] = -ALPHA*Qfinal[i]*exp( -ALPHA * _tm ) - jsVel[i];
         
         /* Uncomment for debugging */
         // cout << _tm << " : " << i << " : " << Pos_sens[i] << " : " 
@@ -266,6 +272,27 @@ void converge()
         {
             torques[i] = 0.0;
         }
+
+        if ( y[i] <= 0.0001 && y[i] >= -0.0001 )
+        {
+            converged = true;
+        }
+        else
+        {
+            converged = false;
+        }
+    }
+}
+
+void init_pos()
+{
+    if ( !bBegin )
+    {
+        for ( int i= 0; i< n; i++ )
+        {
+            Qfinal[i] = M_PI;
+        }
+        converge();
     }
 }
 

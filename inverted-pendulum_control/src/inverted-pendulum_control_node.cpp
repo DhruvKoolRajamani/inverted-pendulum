@@ -31,9 +31,22 @@ int main( int argc, char** argv )
             
             setStateFeedback();
 
+            if( !bBegin )
+            {
+                init_pos();
+                if( !converged )
+                {
+                    jointEffortControllers( torques );
+                    bBegin = true;
+                }
+            }
+
             converge();
 
-            jointEffortControllers( torques );
+            if ( !converged )
+                jointEffortControllers( torques );
+            else
+                cout << "\nConverged\n";
 
             ros::spinOnce();
             loop_rate.sleep();

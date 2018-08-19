@@ -184,10 +184,17 @@ def generate_robot(namespace):
             (l_f_len - 0.05) if i == 0
             else (l_link_len - 0.05)
         )
-        l_pos = urdf.Pose(
-            xyz=[0, l_y, l_z],
-            rpy=[0, 0, 0]
-        )
+        if i%2 == 0:
+            l_pos = urdf.Pose(
+                xyz=[0, l_y, l_z],
+                rpy=[0, 0, 0]
+            )
+        else:
+            l_pos = urdf.Pose(
+                xyz=[0, l_y, l_z],
+                rpy=[0, 0, 0]
+            )
+
         l_link[i].visual = default_visual()
         l_link[i].inertial = default_inertial()
         l_link[i].collision = default_collision()
