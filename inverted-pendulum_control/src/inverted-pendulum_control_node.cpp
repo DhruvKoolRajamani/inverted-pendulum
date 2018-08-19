@@ -31,6 +31,10 @@ int main( int argc, char** argv )
             
             setStateFeedback();
 
+            converge();
+
+            jointEffortControllers( torques );
+
             ros::spinOnce();
             loop_rate.sleep();
         }

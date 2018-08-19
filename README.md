@@ -84,7 +84,7 @@ Load controllers: `rosrun inverted-pendulum_control controllers.py`
 
 ### Open a New Terminal Window
 
-#### ADD CONTROLLER
+Run CPP Controller: `rosrun inverted-pendulum_control PID_controller`
 
 ## Acknowledgement
 

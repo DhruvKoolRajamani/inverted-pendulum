@@ -66,6 +66,8 @@ vector< string >                    vPrefix;
 vector< float >                     jsPos;
 vector< float >                     jsVel;
 
+vector< double >                    torques;
+
 vector< ros::Publisher >            vec_pubs_efforts;
 vector< ros::Subscriber >           vec_ftSensor;
 
@@ -111,14 +113,19 @@ bool init( ros::NodeHandlePtr node_handle )
 
     for ( int i= 0; i< n; i++ )
     {
-        // Initializing vector of strings for joint effort controllers in the spine
-        node_handle->getParam(prefix + "joint/" + to_string(i), jointName);
+        // Initializing vector of strings for joint effort controllers
+        node_handle->getParam(
+            prefix + "joint/" + 
+            to_string(i), 
+            jointName
+            );
         continuousJointsList.push_back(jointName);
 
         // cout << i << " : " << continuousJointsList[i] << endl;
 
         string joint_control_topic_name = 
-            control_prefix + "joint_effort_controller_" + jointName + "/command";
+            control_prefix + "joint_effort_controller_" 
+            + jointName + "/command";
         jointEffortList.push_back(joint_control_topic_name);
 
         pubs_efforts = node_handle->advertise< std_msgs::Float64 > ( 
@@ -136,6 +143,8 @@ bool init( ros::NodeHandlePtr node_handle )
 
         jsPos.push_back( 0.0 );
         jsVel.push_back( 0.0 );
+
+        torques.push_back( 0.0 );
     }
 
     if ( /*condition*/ true )
@@ -144,7 +153,7 @@ bool init( ros::NodeHandlePtr node_handle )
         return false;
 }
 
-void jointEffortControllers( double torques[] )
+void jointEffortControllers( vector< double > torques )
 {
     std_msgs::Float64 TmpData;
 
@@ -155,7 +164,9 @@ void jointEffortControllers( double torques[] )
     }
 }
 
-void jointStateCallback( const sensor_msgs::JointState::ConstPtr & msg )
+void jointStateCallback(
+    const sensor_msgs::JointState::ConstPtr & msg
+    )
 {
     jointState = *msg;
 }
@@ -176,7 +187,12 @@ void setStateFeedback()
     {
         for ( int j = 0; j< jointState.name.size(); j++ )
         {
-            if (( continuousJointsList[i].compare( jointState.name[j] ) ) == 0 )
+            if (( 
+                continuousJointsList[i].compare( 
+                                    jointState.name[j]
+                                    ) 
+                            ) 
+                == 0 )
             {
                 jsPos[i] = (float)jointState.position[j];
                 jsVel[i] = (float)jointState.velocity[j];
@@ -207,6 +223,48 @@ void ftFeedback( ros::NodeHandlePtr node_handle )
                                 callbackQueueSize, 
                                 ftCallback
                                 );
+        }
+    }
+}
+
+void converge()
+{
+    double y[n];  // desired output to be driven to zero
+    double dy[n]; // derivative of the desired output to be driven to zero
+    double pos_des;
+    double vel_des;
+    double Kp[n], Kd[n];
+    double ALPHA = 0.3;
+
+    double Qfinal[n];
+
+    for( int i= 0; i< n; i++ )
+    {
+        Qfinal[i] = 0.0;
+        Kp[i] = 100;
+        Kd[i] = 10;
+    }
+
+    for ( int i = 0; i< n; i++ )
+    {
+        y[i] = Qfinal[i]*( 1 + exp( -ALPHA * _tm ) ) - jsPos[i];
+        dy[i] = - ALPHA*Qfinal[i]*exp( -ALPHA * _tm ) - jsVel[i];
+        
+        /* Uncomment for debugging */
+        // cout << _tm << " : " << i << " : " << Pos_sens[i] << " : " 
+        //      << Pos_sens0[i] << " : " << Qfinal[i] << " : " 
+        //      << pos_des << " : " << tauDes[i] << endl;
+    }
+
+    for ( int i= 0; i< n; i++ )
+    {
+        double temp;
+        temp = Kp[i]*(y[i]) + Kd[i]*(dy[i]);
+        if( temp < 10000000000000 && temp > -10000000000000 )
+            torques[i] = temp;
+        else
+        {
+            torques[i] = 0.0;
         }
     }
 }
