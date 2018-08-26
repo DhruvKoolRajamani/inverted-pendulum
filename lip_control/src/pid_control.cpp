@@ -21,10 +21,13 @@ std::vector< double >                           torques;
 
 void init()
 {
-    jsPos.push_back( 0.0 );
-    jsVel.push_back( 0.0 );
+    for ( int i= 0; i< n; i++ )
+    {
+        jsPos.push_back( 0.0 );
+        jsVel.push_back( 0.0 );
 
-    torques.push_back( 0.0 );
+        torques.push_back( 0.0 );
+    }
 }
 
 int main( int argc, char** argv )
@@ -35,8 +38,6 @@ int main( int argc, char** argv )
         ros::NodeHandlePtr( new ros::NodeHandle( "~" ) );
 
     ros::Rate loop_rate = 1000;
-
-    init();
     
     lip_controller controller( nhMain );
 
@@ -44,15 +45,15 @@ int main( int argc, char** argv )
 
     n = controller.getNLinks();
 
+    init();
+
     // controller.ftFeedback();
 
     while ( nhMain->ok() )
     {
         _tm = controller.getSimulationTime();
         
-        controller.getStateFeedback( jsPos, jsVel );
-
-        // std::cout << jsPos[0] << " : " << jsVel[0] << std::endl;
+        controller.setStateFeedback( jsPos, jsVel );
 
         converge(
             n,

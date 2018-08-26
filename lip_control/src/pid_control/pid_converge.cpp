@@ -4,9 +4,9 @@
 
 void converge(
     const int n, const double _tm, 
-    std::vector< float > jsPos, 
-    std::vector< float > jsVel, 
-    std::vector< double > torques
+    std::vector< float > &jsPos, 
+    std::vector< float > &jsVel, 
+    std::vector< double > &torques
     )
 {
     double y[n];  // desired output to be driven to zero

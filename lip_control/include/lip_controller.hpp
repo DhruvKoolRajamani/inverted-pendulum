@@ -59,8 +59,7 @@ class lip_controller
     
     void jointStateCallback( const sensor_msgs::JointState::ConstPtr& );
     void jointStateFeedback();
-    void setStateFeedback();
-    void getStateFeedback( vector< float > _qSens, vector< float > _dqSens );
+    void setStateFeedback( vector< float > &_qSens, vector< float > &_dqSens );
 
     double getSimulationTime();
     int getNLinks();

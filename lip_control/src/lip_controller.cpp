@@ -103,7 +103,7 @@ void lip_controller::jointStateFeedback()
                             this);
 }
 
-void lip_controller::setStateFeedback()
+void lip_controller::setStateFeedback( vector< float > &_qSens, vector< float > &_dqSens )
 {
     lip_controller::jointStateFeedback();
     for ( int i= 0; i< n; i++ )
@@ -119,17 +119,9 @@ void lip_controller::setStateFeedback()
             }
         }
     }
-}
 
-void lip_controller::getStateFeedback( vector< float > _qSens, vector< float > _dqSens )
-{
-    lip_controller::setStateFeedback();
-
-    for ( int i = 0; i< n; i++ )
-    {
-        _qSens[i] = jsPos[i];
-        _dqSens[i] = jsVel[i];
-    }
+    _qSens.assign( jsPos.begin(), jsPos.end() );
+    _dqSens.assign( jsVel.begin(), jsVel.end() );
 }
 
 // void ftCallback( const geometry_msgs::WrenchStamped& msg )
