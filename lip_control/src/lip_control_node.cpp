@@ -1,13 +1,13 @@
 /**
  ***************************************************
- * PID Controller for a LIP: inverted-pendulum_control_node.cpp
+ * PID Controller for a LIP: lip_control_node.cpp
  * 
  * @author Dhruv Kool Rajamani
  * @version 0.0 19/08/2018
  ***************************************************
  */
 
-#include "inverted-pendulum_control_node.hpp"
+#include "lip_control_node.hpp"
 
 int main( int argc, char** argv )
 {

@@ -58,7 +58,7 @@ If you dont have a catkin workspace initialized:
 ```
 mkdir -p ~/catkin_ws/src
 cd catkin_ws/src/
-git clone https://gitlab.com/biorobotics-group-manipal/inverted-pendulum.git
+git clone https://gitlab.com/biorobotics-group-manipal/lip.git
 cd ~/catkin_ws/
 catkin_make
 ```
@@ -74,17 +74,17 @@ Start roscore: `roscore`
 
 ### Open a New Terminal Window
 
-Gazebo Simulaton: `rosrun inverted-pendulum_description pysim.py`
+Gazebo Simulaton: `rosrun lip_description pysim.py`
 
-rViz Simulation: `rosrun inverted-pendulum_description pyviz.py`
-
-### Open a New Terminal Window
-
-Load controllers: `rosrun inverted-pendulum_control controllers.py`
+rViz Simulation: `rosrun lip_description pyviz.py`
 
 ### Open a New Terminal Window
 
-Run CPP Controller: `rosrun inverted-pendulum_control PID_controller`
+Load controllers: `rosrun lip_control controllers.py`
+
+### Open a New Terminal Window
+
+Run CPP Controller: `rosrun lip_control PID_controller`
 
 ## Acknowledgement
 

@@ -1,6 +1,6 @@
 /**
  ***************************************************
- * PID Controller for a LIP: inverted-pendulum_control_node.h
+ * PID Controller for a LIP: lip_control_node.h
  * 
  * @author Dhruv Kool Rajamani
  * @version 0.0 19/08/2018
